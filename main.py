@@ -1,6 +1,6 @@
 # bot_manager.py
 # ----------------------------------------------------
-# Sirocco Dynamic Bot & Userbot Cloner System
+# Sirocco Dynamic Bot & Userbot Cloner System (Fixed)
 # ----------------------------------------------------
 
 import asyncio
@@ -55,7 +55,7 @@ async def clone_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await update.message.reply_text("🔄 Processing... Setting up your cloned bot and userbot, please wait.")
         
-        # ১. নতুন বট ক্লোন ও রান করা
+        # ১. নতুন বট ক্লোন ও রান করা (সঠিক অ্যাসিনক্রোনাস উপায়)
         new_app = ApplicationBuilder().token(bot_token).build()
         
         async def dynamic_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -66,7 +66,7 @@ async def clone_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         await new_app.initialize()
         await new_app.start()
-        asyncio.create_task(new_app.updater.start_polling())
+        await new_app.updater.start_polling() # এখানে asyncio.create_task সরিয়ে সরাসরি await দেওয়া হয়েছে
         ACTIVE_BOTS[bot_token] = new_app
 
         # ২. যদি সেশন দেওয়া থাকে, তবে ইউজারবটও রান করা
