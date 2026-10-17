@@ -44,8 +44,8 @@ async def clone_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("🔄 Processing... Connecting your Userbot, please wait.")
         
         # টেলিগ্রামের ডিফল্ট API_ID এবং API_HASH
-        api_id = 6  
-        api_hash = "eb06d4abfb49dc3eeb1aeb98ae0f581e"
+        api_id = 33422392  
+        api_hash = "9b66ed5b9e6a307951b3a681c80f9d4b"
         
         # Telethon ব্যবহার করে ইউজারবট ক্লায়েন্ট চালু করা
         client = TelegramClient(StringSession(string_session), int(api_id), api_hash)
