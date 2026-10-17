@@ -65,7 +65,8 @@ async def clone_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("✅ সফল! আপনার দেওয়া টোকেন দিয়ে নতুন বটটি সফলভাবে চালু এবং রান করা হয়েছে। 🎉")
         
     except Exception as e:
-        await.update.message.reply_text(f"❌ বট চালু করতে সমস্যা হয়েছে: `{str(e)}`", parse_mode="Markdown")
+        # এখানে আগের ডট (.) ত্রুটি সংশোধন করা হয়েছে
+        await update.message.reply_text(f"❌ বট চালু করতে সমস্যা হয়েছে: `{str(e)}`", parse_mode="Markdown")
 
 
 async def run_userbot(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -106,11 +107,11 @@ async def run_userbot(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def main():
-    # মেইন কন্ট্রোল বট টোকেন (যেটি দিয়ে আপনি কমান্ড পরিচালনা করবেন)
+    # মেইন কন্ট্রোল বট টোকেন
     MASTER_TOKEN = "8795990981:AAFA57XvuHVjzBcaED1T-YLHsj5VgqeRR4k"
     
     print("=" * 60)
-    print("   Sirocco Master Bot Cloner & Session Runner Starting...")
+    print("   Sirocco Master Bot Cloner & Userbot Runner Starting...")
     print("=" * 60)
     
     app = ApplicationBuilder().token(MASTER_TOKEN).build()
