@@ -70,7 +70,7 @@ async def clone_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             # টেলিগ্রামের ডিফল্ট পাবলিক API_ID এবং API_HASH অথবা আপনার নিজস্ব দিতে পারেন
             api_id = 31260540
-            api_hash = "cd213befc727364a96df92d26852bd89" // অথবা আপনার API Hash
+            api_hash = "cd213befc727364a96df92d26852bd89"
             
             client = TelegramClient(StringSession(string_session), int(api_id), api_hash)
             await client.start()
