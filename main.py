@@ -1,6 +1,6 @@
 # bot_manager.py
 # ----------------------------------------------------
-# Sirocco Dynamic Bot & Userbot Cloner System (Fixed)
+# Sirocco Dynamic Bot & Userbot Cloner System (Event Loop Fixed)
 # ----------------------------------------------------
 
 import asyncio
@@ -55,7 +55,7 @@ async def clone_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await update.message.reply_text("🔄 Processing... Setting up your cloned bot and userbot, please wait.")
         
-        # ১. নতুন বট ক্লোন ও রান করা (সঠিক অ্যাসিনক্রোনাস উপায়)
+        # ১. নতুন বট ক্লোন ও রান করা
         new_app = ApplicationBuilder().token(bot_token).build()
         
         async def dynamic_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -66,7 +66,7 @@ async def clone_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         await new_app.initialize()
         await new_app.start()
-        await new_app.updater.start_polling() # এখানে asyncio.create_task সরিয়ে সরাসরি await দেওয়া হয়েছে
+        await new_app.updater.start_polling()
         ACTIVE_BOTS[bot_token] = new_app
 
         # ২. যদি সেশন দেওয়া থাকে, তবে ইউজারবটও রান করা
@@ -90,7 +90,7 @@ async def clone_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Failed to start bot: `{str(e)}`", parse_mode="Markdown")
 
 
-def main():
+async def main_async():
     # মেইন কন্ট্রোল বট টোকেন
     MASTER_TOKEN = "8795990981:AAFA57XvuHVjzBcaED1T-YLHsj5VgqeRR4k"
     
@@ -103,8 +103,23 @@ def main():
     app.add_handler(CommandHandler("start", start_command))
     app.add_handler(CommandHandler("clone", clone_bot))
     
-    print("Master Bot is running... Send /start in Telegram.")
-    app.run_polling()
+    # অ্যাসিনক্রোনাস পদ্ধতিতে বট ইনিশিয়ালাইজ ও স্টার্ট করা
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling()
+    
+    print("Master Bot is running successfully...")
+    
+    # বট চালু রাখার জন্য ইনফিনিট লুপ
+    stop_event = asyncio.Event()
+    await stop_event.wait()
+
+
+def main():
+    try:
+        asyncio.run(main_async())
+    except KeyboardInterrupt:
+        print("Bot stopped by user.")
 
 if __name__ == "__main__":
     main()
