@@ -1,18 +1,16 @@
 # bot_manager.py
 # ----------------------------------------------------
-# Sirocco Userbot Runner System (Interactive Session Input)
+# Sirocco Userbot Runner System (Direct One-Line Clone)
 # ----------------------------------------------------
 
 import asyncio
 from telegram import Update
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 from telethon import TelegramClient
 from telethon.sessions import StringSession
 
 # সক্রিয় ইউজারবটগুলো সংরক্ষণের জন্য ডিকশনারি
 ACTIVE_USERBOTS = {}
-# ইউজারের স্টেট ট্র্যাক করার জন্য (কার জন্য সেশন চাওয়া হচ্ছে)
-WAITING_FOR_SESSION = set()
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
@@ -20,37 +18,31 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     help_text = (
         "🤖 Sirocco Userbot Runner\n\n"
-        "To run your Userbot, simply use the command below:\n\n"
-        "👉 `/clone`\n\n"
-        "(The bot will ask for your String Session safely without any argument cut-off issues!)"
+        "To run your Userbot, please use the command below:\n\n"
+        "👉 Run Userbot:\n"
+        "/clone <STRING_SESSION>\n\n"
+        "(Note: Provide your Telegram String Session directly with the command to start your Userbot instantly!)"
     )
-    await update.message.reply_text(help_text, parse_mode="Markdown")
+    await update.message.reply_text(help_text)
 
 
-async def clone_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def clone_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
-    ইউজারকে সেশন পাঠানোর জন্য প্রম্পট করবে।
+    এক লাইনেই /clone কমান্ডের সাথে সেশন নিয়ে ইউজারবট রান করবে।
     """
-    user_id = update.effective_user.id
-    WAITING_FOR_SESSION.add(user_id)
-    await update.message.reply_text(
-        "📥 Please send your Telegram String Session now as a plain text message:"
-    )
+    # মেসেজ থেকে সরাসরি /clone বাদ দিয়ে বাকি সম্পূর্ণ টেক্সট সেশন হিসেবে নেওয়া
+    message_text = update.message.text.strip()
+    if message_text.startswith("/clone"):
+        string_session = message_text[6:].strip().replace("'", "").replace('"', "")
+    else:
+        string_session = " ".join(context.args).strip().replace("'", "").replace('"', "")
 
-
-async def handle_session_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    ইউজারের পাঠানো সেশন রিসিভ করে ইউজারবট রান করবে।
-    """
-    user_id = update.effective_user.id
-    if user_id not in WAITING_FOR_SESSION:
+    if not string_session:
+        await update.message.reply_text(
+            "⚠️ Please provide your String Session!\n"
+            "Usage: /clone <STRING_SESSION>"
+        )
         return
-
-    # স্টেট রিমুভ করা
-    WAITING_FOR_SESSION.remove(user_id)
-    
-    # সেশন টেক্সট ক্লিন করা (কোনো অতিরিক্ত স্পেস বা কোটেশন থাকলে রিমুভ)
-    string_session = update.message.text.strip().replace("'", "").replace('"', "")
 
     status_msg = await update.message.reply_text("🔄 Processing... Connecting your Userbot to Telegram, please wait...")
 
@@ -100,9 +92,7 @@ async def main_async():
     app = ApplicationBuilder().token(MASTER_TOKEN).build()
     
     app.add_handler(CommandHandler("start", start_command))
-    app.add_handler(CommandHandler("clone", clone_command))
-    # যেকোনো সাধারণ টেক্সট মেসেজ হ্যান্ডেল করার জন্য (যখন সেশন পাঠাবে)
-    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_session_message))
+    app.add_handler(CommandHandler("clone", clone_bot))
     
     await app.initialize()
     await app.start()
