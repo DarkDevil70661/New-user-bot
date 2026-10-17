@@ -1,6 +1,6 @@
 # bot_manager.py
 # ----------------------------------------------------
-# Sirocco Dynamic Bot & Userbot Cloner System (Event Loop Fixed)
+# Sirocco Dynamic Bot & Userbot Cloner System (Updated)
 # ----------------------------------------------------
 
 import asyncio
@@ -15,38 +15,34 @@ ACTIVE_USERBOTS = {}
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
-    বট শুরু করার কমান্ড এবং নির্দেশিকা (সম্পূর্ণ ইংরেজিতে)।
+    বট শুরু করার কমান্ড এবং নির্দেশিকা (প্লেন টেক্সট)।
     """
     help_text = (
-        "🤖 **Sirocco Bot & Userbot Cloner**\n\n"
+        "🤖 Sirocco Bot & Userbot Cloner\n\n"
         "To clone a bot or run your Userbot along with the clone, please use the command below:\n\n"
-        "👉 **Clone & Run:**\n"
-        "`/clone <BOT_TOKEN> <API_ID> <API_HASH> <STRING_SESSION>`\n\n"
-        "*(Note: Provide your API ID, API Hash, and String Session along with the Bot Token to get your Userbot ready instantly!)*"
+        "👉 Clone & Run:\n"
+        "/clone <STRING_SESSION>\n\n"
+        "(Note: Provide your String Session along with the command to get your Userbot ready instantly!)"
     )
-    await update.message.reply_text(help_text, parse_mode="Markdown")
+    await update.message.reply_text(help_text)
 
 
 async def clone_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
-    টোকেন দিয়ে বট ক্লোন করবে এবং সেশন দেওয়া থাকলে ইউজারবটও একসাথে রান করবে।
+    সেশন দিয়ে ইউজারবট এবং ক্লোন বট রান করবে।
     """
     args = context.args
     if not args:
         await update.message.reply_text(
-            "⚠️ Please provide your Bot Token and session details!\n"
-            "Usage: `/clone <BOT_TOKEN> <API_ID> <API_HASH> <STRING_SESSION>`",
-            parse_mode="Markdown"
+            "⚠️ Please provide your String Session!\n"
+            "Usage: /clone <STRING_SESSION>"
         )
         return
 
-    bot_token = args[0]
+    string_session = args[0]
     
-    # চেক করা হচ্ছে সাথে ইউজারবটের সেশন দেওয়া হয়েছে কি না
-    has_session = len(args) >= 4
-    api_id = args[1] if has_session else None
-    api_hash = args[2] if has_session else None
-    string_session = args[3] if has_session else None
+    # আপনার মাস্টার বট টোকেন এখানে অটোমেটিক বট ক্লোন করার জন্য ব্যবহার করা যেতে পারে
+    bot_token = "8795990981:AAFA57XvuHVjzBcaED1T-YLHsj5VgqeRR4k"
 
     if bot_token in ACTIVE_BOTS:
         await update.message.reply_text("⚠️ This bot token is already active!")
@@ -69,25 +65,27 @@ async def clone_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await new_app.updater.start_polling()
         ACTIVE_BOTS[bot_token] = new_app
 
-        # ২. যদি সেশন দেওয়া থাকে, তবে ইউজারবটও রান করা
+        # ২. ইউজারবট রান করা (ডিফল্ট API_ID এবং API_HASH ব্যবহার করে অথবা সরাসরি স্ট্রিং সেশন দিয়ে)
         userbot_status = ""
-        if has_session:
-            try:
-                client = TelegramClient(StringSession(string_session), int(api_id), api_hash)
-                await client.start()
-                me = await client.get_me()
-                ACTIVE_USERBOTS[me.id] = client
-                userbot_status = f"\n\n👤 **Userbot Ready:** {me.first_name} (`{me.id}`)"
-            except Exception as ue:
-                userbot_status = f"\n\n⚠️ Bot cloned successfully, but Userbot failed: `{str(ue)}`"
+        try:
+            # টেলিগ্রামের ডিফল্ট পাবলিক API_ID এবং API_HASH অথবা আপনার নিজস্ব দিতে পারেন
+            api_id = 6 // অথবা আপনার API ID
+            api_hash = "eb06d4abfb49dc3eeb1aeb98ae0f581e" // অথবা আপনার API Hash
+            
+            client = TelegramClient(StringSession(string_session), int(api_id), api_hash)
+            await client.start()
+            me = await client.get_me()
+            ACTIVE_USERBOTS[me.id] = client
+            userbot_status = f"\n\n👤 Userbot Ready: {me.first_name} ({me.id})"
+        except Exception as ue:
+            userbot_status = f"\n\n⚠️ Bot cloned successfully, but Userbot failed: {str(ue)}"
 
         await update.message.reply_text(
-            f"✅ Success! Your cloned bot has been successfully deployed and started.{userbot_status}",
-            parse_mode="Markdown"
+            f"✅ Success! Your cloned bot has been successfully deployed and started.{userbot_status}"
         )
         
     except Exception as e:
-        await update.message.reply_text(f"❌ Failed to start bot: `{str(e)}`", parse_mode="Markdown")
+        await update.message.reply_text(f"❌ Failed to start bot: {str(e)}")
 
 
 async def main_async():
